@@ -138,13 +138,21 @@
                           (eq-data #:mutable #:auto)]
   #:property prop:cpointer 0)
 
+(provide version nlopt-opt?)
+
+
 ;;; BASICS
 
 (defnlopt destroy : _nlopt_opt -> _void)
 (defnlopt create
   (lambda (f)
     (lambda args
-      (nlopt-opt (apply f args))))
+      (define o (apply f args))
+      (register-finalizer
+       o
+       (lambda (x)
+         (destroy x)))
+      (nlopt-opt o)))
   : _nlopt_algorithm _uint -> _nlopt_opt)
 (defnlopt copy
   (lambda (f)
@@ -172,6 +180,9 @@
 
 (defnlopt get-algorithm : _nlopt_opt -> _nlopt_algorithm)
 (defnlopt get-dimension : _nlopt_opt -> _uint)
+
+(provide create copy optimize get-algorithm get-dimension)
+
 
 
 ;;; CONSTRAINTS
@@ -219,6 +230,13 @@
 ; add-precond-equality-constraint
 ; add-equality-mconstraint
 
+(provide set-lower-bounds  set-upper-bounds
+         set-lower-bounds1 set-upper-bounds1
+         get-lower-bounds  get-upper-bounds
+         remove-inequality-constraints
+         add-inequality-constraint
+         remove-equality-constraints
+         add-equality-constraint)
 
 ;;; STOPPING CRITERIA
 
@@ -248,26 +266,12 @@
 (defnlopt set-munge : _nlopt_opt _nlopt_munge _nlopt_munge -> _void)
 
 
-
-
-(define opt (create 'LN_COBYLA 2))
-(set-maxeval opt 150000)
-(set-lower-bounds1 opt -10.0)
-(define (f dim x grad data)
-  (define a (ptr-ref x _double 0))
-  (define b (ptr-ref x _double 1))
-  (when grad
-        (ptr-set! grad _double 0 (cos a))
-        (ptr-set! grad _double 1 (cos b)))
-  (+ (* a a) (* b b)))
-(set-min-objective opt f #f)
-(add-equality-constraint opt
-                         (lambda (dim x grad data)
-                           (+ (ptr-ref x _double 0)
-                              (ptr-ref x _double 1)
-                              -1.0))
-                         #f
-                         1e-8)
-(define x (f64vector -3.0 -0.5))
-(optimize opt x)
-(f64vector->list x)
+(provide set-stopval   get-stopval
+         set-ftol-rel  get-ftol-rel
+         set-ftol-abs  get-ftol-abs
+         set-xtol-rel  get-xtol-rel
+         set-xtol-abs1
+         set-xtol-abs  get-xtol-abs
+         set-maxeval   get-maxeval
+         set-maxtime   get-maxtime
+         force-stop)
