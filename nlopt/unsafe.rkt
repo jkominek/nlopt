@@ -1,11 +1,8 @@
 #lang racket/base
 
 (require (for-syntax racket/base))
-(require racket/flonum
-         syntax/parse
-         ffi/unsafe
-         ffi/cvector
-         ffi/vector)
+(require syntax/parse
+         ffi/unsafe)
 
 (define libnlopt-name
   (case (system-type 'os)
@@ -78,7 +75,9 @@
          
            LD_CCSAQ
 
-           GN_ESCH)))
+           GN_ESCH
+
+           NUM_ALGORITHMS)))
 
 (define _nlopt_result
   (_enum '(FAILURE = -1 ; generic failure code
@@ -143,6 +142,24 @@
 
 ;;; BASICS
 
+(define algorithms
+  (for/list ([i (in-range 0 (cast 'NUM_ALGORITHMS _nlopt_algorithm _int))])
+    (cast i _int _nlopt_algorithm)))
+
+(defnlopt algorithm-name : _nlopt_algorithm -> _string)
+
+(define algorithm-name-hash
+  (for/hash ([algo algorithms])
+    (values (algorithm-name algo)
+            algo)))
+
+(define (name->algorithm s)
+  (hash-ref algorithm-name-hash s))
+
+(provide algorithms
+         (rename-out [algorithm-name algorithm->name])
+         name->algorithm)
+
 (defnlopt destroy : _nlopt_opt -> _void)
 (defnlopt create
   (lambda (f)
@@ -163,7 +180,7 @@
                  (nlopt-opt-eq-data o))))
   : _nlopt_opt -> _nlopt_opt)
 
-(defnlopt optimize : _nlopt_opt _f64vector (opt_f : (_ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
+(defnlopt optimize : _nlopt_opt _pointer (opt_f : (_ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
 
 (define _nlopt_func (_fun (n : _uint) _pointer (_or-null _pointer) _racket -> _double))
 
@@ -181,23 +198,25 @@
 (defnlopt get-algorithm : _nlopt_opt -> _nlopt_algorithm)
 (defnlopt get-dimension : _nlopt_opt -> _uint)
 
-(provide create copy optimize get-algorithm get-dimension)
+(provide create copy optimize
+         set-min-objective set-max-objective
+         get-algorithm get-dimension)
 
 
 
 ;;; CONSTRAINTS
 
-(defnlopt set-lower-bounds : _nlopt_opt _f64vector -> _nlopt_result)
-(defnlopt set-upper-bounds : _nlopt_opt _f64vector -> _nlopt_result)
-(defnlopt set-lower-bounds1 : _nlopt_opt _double -> _nlopt_result)
-(defnlopt set-upper-bounds1 : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-lower-bounds : _nlopt_opt _pointer -> _nlopt_result)
+(defnlopt set-upper-bounds : _nlopt_opt _pointer -> _nlopt_result)
+(defnlopt set-lower-bounds1 : _nlopt_opt _double* -> _nlopt_result)
+(defnlopt set-upper-bounds1 : _nlopt_opt _double* -> _nlopt_result)
 
 (defnlopt get-lower-bounds
-  : (opt : _nlopt_opt) (lb : (_f64vector o (get-dimension opt)))
-  -> (res : _nlopt_result) -> (values res lb))
+  : (opt : _nlopt_opt) (lb : _pointer)
+  -> (res : _nlopt_result))
 (defnlopt get-upper-bounds
-  : (opt : _nlopt_opt) (ub : (_f64vector o (get-dimension opt)))
-  -> (res : _nlopt_result) -> (values res ub))
+  : (opt : _nlopt_opt) (ub : _pointer)
+  -> (res : _nlopt_result))
 
 (define (add-in/eq-wrapper accessor setter)
   (lambda (raw)
@@ -215,7 +234,7 @@
   : _nlopt_opt -> _nlopt_result)
 (defnlopt add-inequality-constraint
   (add-in/eq-wrapper nlopt-opt-ineq-data set-nlopt-opt-ineq-data!)
-  : _nlopt_opt _nlopt_func _racket _double -> _nlopt_result)
+  : _nlopt_opt _nlopt_func _racket _double* -> _nlopt_result)
 ; omitted
 ; add-precond-inequality-constraint
 ; add-inequality-mconstraint
@@ -225,7 +244,7 @@
   : _nlopt_opt -> _nlopt_result)
 (defnlopt add-equality-constraint
   (add-in/eq-wrapper nlopt-opt-eq-data set-nlopt-opt-eq-data!)
-  : _nlopt_opt _nlopt_func _racket _double -> _nlopt_result)
+  : _nlopt_opt _nlopt_func _racket _double* -> _nlopt_result)
 ; omitted
 ; add-precond-equality-constraint
 ; add-equality-mconstraint
@@ -240,38 +259,67 @@
 
 ;;; STOPPING CRITERIA
 
-(defnlopt set-stopval : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-stopval : _nlopt_opt _double* -> _nlopt_result)
 (defnlopt get-stopval : _nlopt_opt -> _double)
 
-(defnlopt set-ftol-rel : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-ftol-rel : _nlopt_opt _double* -> _nlopt_result)
 (defnlopt get-ftol-rel : _nlopt_opt -> _double)
-(defnlopt set-ftol-abs : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-ftol-abs : _nlopt_opt _double* -> _nlopt_result)
 (defnlopt get-ftol-abs : _nlopt_opt -> _double)
 
-(defnlopt set-xtol-rel : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-xtol-rel : _nlopt_opt _double* -> _nlopt_result)
 (defnlopt get-xtol-rel : _nlopt_opt -> _double)
-(defnlopt set-xtol-abs1 : _nlopt_opt _double -> _nlopt_result)
-(defnlopt set-xtol-abs : _nlopt_opt _f64vector -> _nlopt_result)
-(defnlopt get-xtol-abs : _nlopt_opt _f64vector -> _nlopt_result)
+(defnlopt set-xtol-abs1 : _nlopt_opt _double* -> _nlopt_result)
+(defnlopt set-xtol-abs : _nlopt_opt _pointer -> _nlopt_result)
+(defnlopt get-xtol-abs : _nlopt_opt _pointer -> _nlopt_result)
 
 (defnlopt set-maxeval : _nlopt_opt _int -> _nlopt_result)
 (defnlopt get-maxeval : _nlopt_opt -> _int)
 
-(defnlopt set-maxtime : _nlopt_opt _double -> _nlopt_result)
+(defnlopt set-maxtime : _nlopt_opt _double* -> _nlopt_result)
 (defnlopt get-maxtime : _nlopt_opt -> _double)
 
 (defnlopt force-stop : _nlopt_opt -> _nlopt_result)
+(defnlopt set-force-stop : _nlopt_opt _int -> _nlopt_result)
+(defnlopt get-force-stop : _nlopt_opt -> _int)
 
+(provide set-stopval    get-stopval
+         set-ftol-rel   get-ftol-rel
+         set-ftol-abs   get-ftol-abs
+         set-xtol-rel   get-xtol-rel
+         set-xtol-abs1
+         set-xtol-abs   get-xtol-abs
+         set-maxeval    get-maxeval
+         set-maxtime    get-maxtime
+         force-stop
+         set-force-stop get-force-stop)
+
+;;; ALGORITHM-SPECIFIC PARAMETERS
+
+(defnlopt set-local-optimizer : _nlopt_opt _nlopt_opt -> _nlopt_result)
+
+(defnlopt set-population : _nlopt_opt _uint -> _nlopt_result)
+(defnlopt get-population : _nlopt_opt -> _uint)
+
+(defnlopt set-vector-storage : _nlopt_opt _uint -> _nlopt_result)
+(defnlopt get-vector-storage : _nlopt_opt -> _uint)
+
+(defnlopt set-default-initial-step : _nlopt_opt _pointer -> _nlopt_result)
+(defnlopt set-initial-step : _nlopt_opt _pointer -> _nlopt_result)
+(defnlopt set-initial-step1 : _nlopt_opt _double* -> _nlopt_result)
+(defnlopt get-initial-step : _nlopt_opt _pointer _pointer -> _nlopt_result)
+
+(provide set-local-optimizer
+         set-population      get-population
+         set-vector-storage  get-vector-storage
+         set-default-initial-step
+         set-initial-step1
+         set-initial-step    get-initial-step)
+
+;;; WRAPPER INTERNALS
+
+; not currently used anywhere
 (define _nlopt_munge (_fun _racket -> _pointer))
 (defnlopt set-munge : _nlopt_opt _nlopt_munge _nlopt_munge -> _void)
 
 
-(provide set-stopval   get-stopval
-         set-ftol-rel  get-ftol-rel
-         set-ftol-abs  get-ftol-abs
-         set-xtol-rel  get-xtol-rel
-         set-xtol-abs1
-         set-xtol-abs  get-xtol-abs
-         set-maxeval   get-maxeval
-         set-maxtime   get-maxtime
-         force-stop)

@@ -1,6 +1,5 @@
 #lang info
 
-(define name "NLopt")
-(define deps '("base"))
+(define collection 'multi)
 
-(define scribblings '(("manual.scrbl")))
+(define deps '("base"))
