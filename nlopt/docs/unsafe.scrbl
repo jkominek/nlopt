@@ -11,6 +11,14 @@ This module is the unsafe, contractless version of the interface
 to the C library. For the safe, fully-contracted version, see
 @racket[nlopt/safe].
 
+The one bit of safety provided by this module is that @code{nlopt_opt}
+structures will be cleaned up properly, and Racket values passed to
+NLopt procedures will be held onto until NLopt no longer refers to
+them.
+
+The API of this module is probably the most stable thing in the whole
+package, as it is a direct mapping of the C API.
+
 @margin-note{Failure to obey any of the requirements mentioned below
 will probably cause Racket to crash.}
 

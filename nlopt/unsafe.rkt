@@ -132,6 +132,8 @@
 (define _nlopt_opt _pointer)
 (define-struct nlopt-opt [ptr
                           ; these will hold on to allocated racket objects
+                          ; TODO this doesn't guarantee the GC won't move
+                          ; them, which would screw things up
                           (obj-data #:mutable #:auto)
                           (ineq-data #:mutable #:auto)
                           (eq-data #:mutable #:auto)]
