@@ -189,13 +189,13 @@
 
 ;;; STOPPING CRITERIA
 
-(define (set-xtol-abs opt bounds)
-  (unsafe-set-xtol-abs opt (flvector->cpointer bounds)))
+(define (set-xtol-abs opt xtols)
+  (unsafe-set-xtol-abs opt (flvector->cpointer xtols)))
 
 (define (get-xtol-abs opt)
-  (define bounds (make-flvector (get-dimension opt)))
-  (values (unsafe-get-xtol-abs opt (flvector->cpointer bounds))
-          bounds))
+  (define xtols (make-flvector (get-dimension opt)))
+  (values (unsafe-get-xtol-abs opt (flvector->cpointer xtols))
+          xtols))
 
 (provide/contract
  [set-stopval (-> nlopt-opt? real? nlopt-result/c)]
@@ -208,12 +208,12 @@
  [get-xtol-rel (-> nlopt-opt? flonum?)]
  [set-xtol-abs1 (-> nlopt-opt? real? nlopt-result/c)]
  [set-xtol-abs (->i ([opt nlopt-opt?]
-                     [bounds (opt) (flvector/length? (get-dimension opt))])
+                     [xtols (opt) (flvector/length? (get-dimension opt))])
                     [res nlopt-result/c])]
  [get-xtol-abs (->i ([opt nlopt-opt?])
                     (values
                      [res nlopt-result/c]
-                     [bounds (opt) (flvector/length? (get-dimension opt))]))]
+                     [xtols (opt) (flvector/length? (get-dimension opt))]))]
  [set-maxeval (-> nlopt-opt? natural-number/c nlopt-result/c)]
  [get-maxeval (-> nlopt-opt? natural-number/c)]
  [set-maxtime (-> nlopt-opt? real? nlopt-result/c)]
