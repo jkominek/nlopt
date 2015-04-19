@@ -1,5 +1,7 @@
 #lang scribble/manual
 
+@(require (for-label racket/flonum))
+
 @title[#:tag "safe"]{Safe Interface}
 
 @defmodule[nlopt/safe]
@@ -39,9 +41,9 @@ to the C library. For the unsafe, contractless version, see
   }
 
 @defproc[(optimize [opt nlopt-opt?]
-                   [x f64vector?])
+                   [x flvector?])
          (values [res symbol?]
-                 [f real?])]{
+                 [f flonum?])]{
   Runs the optimization problem, with an initial guess provided
   in @racket[x]. The status of the optimization is returned in
   @racket[res]. If it was successful, @racket[x] will contain the
@@ -50,3 +52,10 @@ to the C library. For the unsafe, contractless version, see
 
   @racket[x] must be at least as large as the dimension of @racket[opt].
                              }
+
+@section{Constraints}
+
+@section{Stopping Criteria}
+
+@section{Algorithm-Specific Parameters}
+

@@ -11,17 +11,151 @@ This module is the unsafe, contractless version of the interface
 to the C library. For the safe, fully-contracted version, see
 @racket[nlopt/safe].
 
-@section{Basics}
+@margin-note{Failure to obey any of the requirements mentioned below
+will probably cause Racket to crash.}
+
+@section{Differences in the Basics}
 
 @defproc[(optimize [opt nlopt-opt?]
                    [x cpointer?])
          (values [res symbol?]
-                 [f real?])]{
-  Runs the optimization problem, with an initial guess provided
-  in @racket[x]. The status of the optimization is returned in
-  @racket[res]. If it was successful, @racket[x] will contain the
-  optimized values of the parameters, and @racket[f] will by the
-  corresponding value of the objective function.
+                 [f flonum?])]{
+  As with the safe version of @racket[optimize], but @racket[x] is
+  provided as a bare pointer. It must point to a block of memory
+  containing @racket[(get-dimension opt)] double-precision floats.
+}
 
-  @racket[x] must be at least as large as the dimension of @racket[opt].
-                             }
+@defproc[(set-min-objective [opt nlopt-opt?]
+                            [f (-> natural-number/c
+                                   cpointer?
+                                   (or/c cpointer? #f)
+                                   any/c
+                                   flonum?)]
+                            [data any/c])
+         symbol?]{
+  As with the safe version of @racket[set-min-objective],                                                                               but the objective function @racket[f] receives only bare pointers instead
+  of @racket[flvector]s.
+  }
+
+@defproc[(set-max-objective [opt nlopt-opt?]
+                            [f (-> natural-number/c
+                                   cpointer?
+                                   (or/c cpointer? #f)
+                                   any/c
+                                   flonum?)]
+                            [data any/c])
+         symbol?]{
+  As with the safe version of @racket[set-max-objective],                                                                               but the objective function @racket[f] receives only bare pointers instead
+  of @racket[flvector]s.
+  }
+
+@section{Differences in the Constraints}
+
+@defproc[(set-lower-bounds [opt nlopt-opt?] [bounds cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-lower-bounds], but
+  @racket[bounds] is provided as a bare pointer. It must point
+  to a block of memory containing @racket[(get-dimension opt)]
+  double-precision floats.
+  }
+  
+@defproc[(set-upper-bounds [opt nlopt-opt?] [bounds cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-upper-bounds], but
+  @racket[bounds] is provided as a bare pointer. It must point
+  to a block of memory containing @racket[(get-dimension opt)]
+  double-precision floats.
+  }
+
+@defproc[(get-lower-bounds [opt nlopt-opt?] [bounds cpointer?])
+         symbol?]{
+  As with the safe version of @racket[get-lower-bounds], but
+  @racket[bounds] is provided as a bare pointer. It must point
+  to a block of memory large enough to contain @racket[(get-dimension opt)]
+  double-precision floats.
+  }
+  
+@defproc[(get-upper-bounds [opt nlopt-opt?] [bounds cpointer?])
+         symbol?]{
+  As with the safe version of @racket[get-upper-bounds], but
+  @racket[bounds] is provided as a bare pointer. It must point
+  to a block of memory large enough to contain @racket[(get-dimension opt)]
+  double-precision floats.
+  }
+
+@defproc[(add-inequality-constraint [opt nlopt-opt?]
+                                    [f (-> nlopt-opt?
+                                           cpointer?
+                                           (or/c cpointer? #f)
+                                           any/c
+                                           flonum?)]
+                                    [data any/c]
+                                    [tolerance real?])
+         symbol?]{
+  As with the safe version of @racket[add-inequality-constraint],
+  but the constraint function receives only bare pointers instead
+  of @racket[flvector]s.
+}
+
+@defproc[(add-equality-constraint [opt nlopt-opt?]
+                                  [f (-> nlopt-opt?
+                                         cpointer?
+                                         (or/c cpointer? #f)
+                                         any/c
+                                         flonum?)]
+                                  [data any/c]
+                                  [tolerance real?])
+         symbol?]{
+  As with the safe version of @racket[add-inequality-constraint],
+  but the constraint function receives only bare pointers instead
+  of @racket[flvector]s.
+}
+
+@section{Differences in the Stopping Criteria}
+
+@defproc[(set-xtol-abs [opt nlopt-opt?]
+                       [xtols cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-xtol-abs], but
+  @racket[xtols] is provided as a bare pointer. It must point
+  to a block of memory containing @racket[(get-dimension opt)]
+  double-precision floats.
+}
+
+@defproc[(get-xtol-abs [opt nlopt-opt?]
+                       [bounds cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-xtol-abs], but
+  @racket[xtols] is provided as a bare pointer. It must point
+  to a block of memory large enough to contain @racket[(get-dimension opt)]
+  double-precision floats.
+}
+
+@section{Differences in the Algorithm-Specific Parameters}
+
+@defproc[(set-default-initial-step [opt nlopt-opt?]
+                                   [stepsizes cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-default-initial-step], but
+  @racket[stepsizes] is provided as a bare pointer. It must point
+  to a block of memory containing @racket[(get-dimension opt)]
+  double-precision floats.
+}
+
+@defproc[(set-initial-step [opt nlopt-opt?]
+                           [stepsizes cpointer?])
+         symbol?]{
+  As with the safe version of @racket[set-initial-step], but
+  @racket[stepsizes] is provided as a bare pointer. It must point
+  to a block of memory containing @racket[(get-dimension opt)]
+  double-precision floats.
+}
+
+@defproc[(get-initial-step [opt nlopt-opt?]
+                           [stepsizes cpointer?])
+         symbol?]{
+  As with the safe version of @racket[get-initial-step], but
+  @racket[stepsizes] is provided as a bare pointer. It must point
+  to a block of memory large enough to contain @racket[(get-dimension opt)]
+  double-precision floats.
+}
