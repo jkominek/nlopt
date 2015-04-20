@@ -1,4 +1,5 @@
 #lang racket/base
 
-(require "unsafe.rkt")
+(require (file "highlevel.rkt"))
 
+(provide maximize minimize optimize)
