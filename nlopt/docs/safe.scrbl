@@ -1,6 +1,7 @@
 #lang scribble/manual
 
-@(require (for-label racket/flonum))
+@(require (for-label (except-in racket version)
+                     nlopt/safe racket/flonum))
 
 @title[#:tag "safe"]{Safe Interface}
 

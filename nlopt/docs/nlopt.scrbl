@@ -1,6 +1,6 @@
 #lang scribble/manual
 
-@(require (for-label racket/flonum))
+@(require (for-label racket math/flonum racket/flonum nlopt))
 
 @title{NLopt}
 @author[@author+email["Jay Kominek" "kominek@gmail.com"]]
@@ -75,7 +75,8 @@ different optimization routines.
   the upper bound. You may supply @racket[+max.0] and @racket[-max.0] if
   you don't wish to bound a dimension above or below, respectively.
 
-  @racket[ineq-constraints] and @racket[eq-constraints]
+  @racket[ineq-constraints] and @racket[eq-constraints] are sequences
+  of constraint functions (or @racket[#f]). 
 
   @racket[tolerance]
   

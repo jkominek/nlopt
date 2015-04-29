@@ -1,7 +1,8 @@
 #lang scribble/manual
 
-@(require (for-label ffi/unsafe))
-@(require (for-label ffi/vector))
+@(require (for-label (except-in racket version)
+                     (only-in ffi/unsafe cpointer?)
+                     ffi/vector nlopt/unsafe))
 
 @title[#:tag "unsafe"]{Unsafe Interface}
 
@@ -41,7 +42,8 @@ will probably cause Racket to crash.}
                                    flonum?)]
                             [data any/c])
          symbol?]{
-  As with the safe version of @racket[set-min-objective],                                                                               but the objective function @racket[f] receives only bare pointers instead
+  As with the safe version of @racket[set-min-objective],
+  but the objective function @racket[f] receives only bare pointers instead
   of @racket[flvector]s.
   }
 
@@ -53,7 +55,8 @@ will probably cause Racket to crash.}
                                    flonum?)]
                             [data any/c])
          symbol?]{
-  As with the safe version of @racket[set-max-objective],                                                                               but the objective function @racket[f] receives only bare pointers instead
+  As with the safe version of @racket[set-max-objective],
+  but the objective function @racket[f] receives only bare pointers instead
   of @racket[flvector]s.
   }
 
