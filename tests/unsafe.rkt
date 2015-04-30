@@ -1,7 +1,8 @@
 #lang racket
 
-(require "nlopt.rkt")
+(require nlopt/unsafe)
 (require ffi/unsafe ffi/vector)
+(require math/flonum)
 
 (define opt (create 'LN_COBYLA 2))
 (set-maxeval opt 150000)
@@ -21,7 +22,7 @@
                               -1.0))
                          #f
                          1e-8)
-(define x (f64vector -3.0 -0.5))
-(optimize opt x)
-(f64vector->list x)
+(define x (flvector -3.0 -0.5))
+(optimize opt (flvector->cpointer x))
+(flvector->list x)
 
