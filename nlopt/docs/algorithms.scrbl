@@ -33,6 +33,21 @@ They are deterministic search algorithms based on systematic division of
 the search domain into smaller and smaller hyperrectangles. The NLopt documentation
 suggests starting with @code{GN_DIRECT_L} first.
 
+@defthing[GN_CRS2_LM symbol?]
+
+@code{GN_CRS2_LM} is Controlled Random Search with local mutation. It is one
+of the algorithms which makes use of @racket[set-stochastic-population]. The
+NLopt version is described in @cite{Kaelo06}.
+
+@deftogether[(@defthing[GN_MLSL symbol?]
+              @defthing[GD_MLSL symbol?]
+              @defthing[GN_MLSL_LDS symbol?]
+              @defthing[GD_MLSL_LDS symbol?]
+              @defthing[G_MLSL symbol?]
+              @defthing[G_MLSL_LDS symbol?])]
+
+These are all variations on the "Multi-Level Single-Linkage" (MLSL) algorithm
+proposed in @cite{Kan87-1} and @cite{Kan87-2}.
 
 @section{Local derivative-free optimization}
 
@@ -61,14 +76,17 @@ Described in @cite{Conn91} and @cite{Birgin08}.
 
   (bib-entry
    #:key "Jones93"
+   #:author "D. R. Jones, C. D. Perttunen, and B. E. Stuckmann"
    #:title "Lipschitzian optimization without the lipschitz constant"
    #:location (journal-location "J. Optimization Theory and Applications"
                                 #:volume 79
                                 #:pages '(157 157))
    #:date "1993"
    #:url "http://dx.doi.org/10.1007/BF00941892")
+
   (bib-entry
    #:key "Gablonsky01"
+   #:author "J. M. Gablonsky and C. T. Kelley"
    #:title "A locally-biased form of the DIRECT algorithm"
    #:location (journal-location "Journal of Global Optimization"
                                 #:volume 21
@@ -76,7 +94,47 @@ Described in @cite{Conn91} and @cite{Birgin08}.
                                 #:pages '(27 37))
    #:date "2001"
    #:url "http://dx.doi.org/10.1023/A:1017930332101")
-   
+
+  (bib-entry
+   #:key "Kaelo06"
+   #:author "P. Kaelo and M. M. Ali"
+   #:title "Some variants of the controlled random search algorithm for global optimization"
+   #:location (journal-location "J. Optim. Theory Appl."
+                                #:volume 130
+                                #:number 2
+                                #:pages '(253 264))
+   #:date "2006"
+   #:url "http://dx.doi.org/10.1007/s10957-006-9101-0"
+   )
+
+  (bib-entry
+   #:key "Kan87-1"
+   #:author "A. H. G. Rinnooy Kan and G. T. Timmer"
+   #:title "Stochastic global optimization methods part I: Clustering methods"
+   #:location (journal-location "Mathematical Programming"
+                                #:volume 39
+                                #:number 1
+                                #:pages '(27 56))
+   #:date "1987"
+   #:url "http://dx.doi.org/10.1007/BF02592070"
+   )
+
+  (bib-entry
+   #:key "Kan87-2"
+   #:author "A. H. G. Rinnooy Kan and G. T. Timmer"
+   #:title "Stochastic global optimization methods part II: Multi level methods"
+   #:location (journal-location "Mathematical Programming"
+                                #:volume 39
+                                #:number 1
+                                #:pages '(57 78))
+   #:date "1987"
+   #:url "http://dx.doi.org/10.1007/BF02592071"
+   )
+
+
+
+
+
   (bib-entry
    #:key "Conn91"
    #:author "Andrew R. Conn, Nicholas I. M. Gould, and Philippe L. Toint"
@@ -87,7 +145,8 @@ Described in @cite{Conn91} and @cite{Birgin08}.
                                 #:pages '(545 572))
    #:date "1991"
    #:url "http://dx.doi.org/10.1137/0728030")
-  (bib-entry
+
+(bib-entry
    #:key "Birgin08"
    #:author "E. G. Birgin and J. M. Martínez"
    #:title "Improving ultimate convergence of an augmented Lagrangian method"
