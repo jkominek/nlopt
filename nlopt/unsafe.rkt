@@ -131,10 +131,8 @@
 
 (define _nlopt_opt _pointer)
 (define-struct nlopt-opt [ptr
-                          ; these will hold on to allocated racket objects
-                          ; TODO this doesn't guarantee the GC won't move
-                          ; them, which would screw things up
-                          (obj-data #:mutable #:auto)
+			  (obj #:mutable #:auto)
+			  (obj-data #:mutable #:auto)
                           (ineq-data #:mutable #:auto)
                           (eq-data #:mutable #:auto)]
   #:property prop:cpointer 0)
@@ -177,21 +175,24 @@
   (lambda (f)
     (lambda (o)
       (nlopt-opt (f o)
-                 (nlopt-opt-obj-data o)
-                 (nlopt-opt-ineq-data o)
-                 (nlopt-opt-eq-data o))))
+		 (nlopt-opt-obj-data o)
+		 (nlopt-opt-ineq-data o)
+		 (nlopt-opt-eq-data o))))
   : _nlopt_opt -> _nlopt_opt)
 
 (defnlopt optimize : _nlopt_opt _pointer (opt_f : (_ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
 
-(define _nlopt_func (_fun (n : _uint) _pointer (_or-null _pointer) _racket -> _double))
+(define _nlopt_func (_fun (n : _uint) _pointer (_or-null _pointer) _pointer -> _double))
 
 (define (objective-wrapper raw)
   (lambda (o f d)
+    (set-nlopt-opt-obj! o f)
     (set-nlopt-opt-obj-data! o d)
     (raw o f d)))
-(defnlopt set-min-objective objective-wrapper : _nlopt_opt _nlopt_func _racket -> _nlopt_result)
-(defnlopt set-max-objective objective-wrapper : _nlopt_opt _nlopt_func _racket -> _nlopt_result)
+(defnlopt set-min-objective objective-wrapper
+  : _nlopt_opt _nlopt_func _pointer -> _nlopt_result)
+(defnlopt set-max-objective objective-wrapper
+  : _nlopt_opt _nlopt_func _pointer -> _nlopt_result)
 
 ; These are currently omitted
 ; set-precond-min-objective
@@ -236,7 +237,7 @@
   : _nlopt_opt -> _nlopt_result)
 (defnlopt add-inequality-constraint
   (add-in/eq-wrapper nlopt-opt-ineq-data set-nlopt-opt-ineq-data!)
-  : _nlopt_opt _nlopt_func _racket _double* -> _nlopt_result)
+  : _nlopt_opt _nlopt_func _pointer _double* -> _nlopt_result)
 ; omitted
 ; add-precond-inequality-constraint
 ; add-inequality-mconstraint
@@ -246,7 +247,7 @@
   : _nlopt_opt -> _nlopt_result)
 (defnlopt add-equality-constraint
   (add-in/eq-wrapper nlopt-opt-eq-data set-nlopt-opt-eq-data!)
-  : _nlopt_opt _nlopt_func _racket _double* -> _nlopt_result)
+  : _nlopt_opt _nlopt_func _pointer _double* -> _nlopt_result)
 ; omitted
 ; add-precond-equality-constraint
 ; add-equality-mconstraint
@@ -321,7 +322,7 @@
 ;;; WRAPPER INTERNALS
 
 ; not currently used anywhere
-(define _nlopt_munge (_fun _racket -> _pointer))
+(define _nlopt_munge (_fun _pointer -> _pointer))
 (defnlopt set-munge : _nlopt_opt _nlopt_munge _nlopt_munge -> _void)
 
 

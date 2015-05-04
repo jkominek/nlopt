@@ -18,7 +18,7 @@
                   #:eq-constraints [eq-constraints #f]
                   #:tolerance [tolerance 1e-8]
                   #:epsilon [epsilon 1e-8]
-                  #:maxeval [maxeval 100000]
+                  #:maxeval [maxeval 15000]
                   #:maxtime [maxtime #f]
                   )
   (hl-optimize fun x0 data
@@ -73,17 +73,15 @@
      (flvector-set! xtemp i v))))
 
 (define (construct-nlopt-func dimension fun jac)
-    (let* ([flv-x (make-flvector dimension)]
-           [flv-x-ptr (flvector->cpointer flv-x)]
-           [flv-grad (make-flvector dimension)]
-           [flv-grad-ptr (flvector->cpointer flv-grad)])
-      (lambda (_ x grad data)
-        (memcpy flv-x-ptr x dimension _double)
-        (define y (fun flv-x data))
-        (when grad
-          (jac flv-x y data flv-grad)
-          (memcpy grad flv-grad-ptr dimension _double))
-        (real->double-flonum y))))
+  (let* ([flv-x (make-flvector dimension)]
+         [flv-grad (make-flvector dimension)])
+    (lambda (_ x grad data)
+      (memcpy (flvector->cpointer flv-x) x dimension _double)
+      (define y (fun flv-x data))
+      (when grad
+            (jac flv-x y data flv-grad)
+            (memcpy grad (flvector->cpointer flv-grad) dimension _double))
+      (real->double-flonum y))))
 
 (define (hl-optimize
          fun
@@ -106,31 +104,33 @@
   (unless (or maximize minimize)
     (error "have to minimize or maximize"))
 
-  (define retain '())
-  
-  (define initial-x (if (flvector? x0)
-                        x0
-                        (for/flvector ([i x0])
-                                      (real->double-flonum i))))
+  (define initial-x (for/flvector ([i x0])
+                                  (real->double-flonum i)))
   (define dimension (flvector-length initial-x))
 
   ; really want to base this off of four things:
   ; jacobian? bounds? ineq constraints? eq constraints?
+  (define have-jacobian? (procedure? jac))
+  (define have-bounds? (sequence? bounds))
+  (define have-ineq-constraints? (sequence? ineq-constraints))
+  (define have-eq-constraints? (sequence? eq-constraints))
+
   (define algorithm
     (if method
         method
-        (if bounds
-            (if (or ineq-constraints eq-constraints)
+        (if have-bounds?
+            (if (or have-ineq-constraints? have-eq-constraints?)
                 'LD_SLSQP
                 'LD_LBFGS)
-            (if jac
+            ; this is probably insufficient/incorrect.
+            (if have-jacobian?
                 'LD_LBFGS
                 'LN_PRAXIS))))
-
+  
   (define opt (create algorithm dimension))
 
   (define actual-jac
-    (if jac
+    (if have-jacobian?
         jac
         (approximate-jacobian fun epsilon)))
   (define objective-function
@@ -140,7 +140,7 @@
       (set-min-objective opt objective-function data)
       (set-max-objective opt objective-function data))
 
-  (when bounds ;(and #f bounds)
+  (when have-bounds?
     (define lb (make-flvector dimension -max.0))
     (define ub (make-flvector dimension +max.0))
 
@@ -150,8 +150,6 @@
       (flvector-set! lb i (real->double-flonum lo))
       (flvector-set! ub i (real->double-flonum hi)))
 
-    (set! retain (cons lb (cons ub retain)))
-    
     (set-lower-bounds opt (flvector->cpointer lb))
     (set-upper-bounds opt (flvector->cpointer ub)))
 
@@ -161,7 +159,6 @@
                                       constraintf
                                       (approximate-jacobian constraintf
                                                             epsilon)))
-      (set! retain (cons f retain))
       (add-inequality-constraint opt f #f tolerance)))
 
   (when eq-constraints
@@ -170,16 +167,14 @@
                                       constraintf
                                       (approximate-jacobian constraintf
                                                             epsilon)))
-      (set! retain (cons f retain))
       (add-equality-constraint opt f #f tolerance)))
 
   (when maxeval
     (set-maxeval opt maxeval))
+
   (when (and maxtime (> maxtime 0))
     (set-maxtime opt maxtime))
 
   (let-values
-      ([(res y)
-        (optimize opt (flvector->cpointer initial-x))])
-    (printf "~a~n" res)
+      ([(res y) (optimize opt (flvector->cpointer initial-x))])
     (values y initial-x)))
