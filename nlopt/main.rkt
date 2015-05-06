@@ -2,4 +2,4 @@
 
 (require (file "highlevel.rkt"))
 
-(provide maximize minimize optimize)
+(provide (all-from-out (file "highlevel.rkt")))
