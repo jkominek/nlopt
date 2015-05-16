@@ -4,4 +4,6 @@
 
 (define deps '("base" "math-lib"))
 
-(define build-deps '("scribble-lib"))
+(define build-deps '("math-doc"
+                     "racket-doc"
+                     "scribble-lib"))
