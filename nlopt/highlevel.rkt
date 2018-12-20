@@ -5,7 +5,8 @@
 (require math/flonum
          racket/sequence
          racket/vector
-         ffi/vector)
+         ffi/vector
+         ffi/unsafe)
 
 (require (only-in ffi/unsafe flvector->cpointer
                   memcpy _double _double* ptr-ref ptr-set!))
@@ -401,6 +402,9 @@
   (when (and maxtime (> maxtime 0))
     (set-maxtime opt maxtime))
 
-  (let-values
-      ([(res y) (raw-optimize opt (flvector->cpointer initial-x))])
-    (values y (output-formatter initial-x))))
+  (define x-ioarray (malloc _double dimension 'atomic-interior))
+  (memcpy x-ioarray (flvector->cpointer initial-x) dimension _double)
+  (define-values (res y) (raw-optimize opt x-ioarray))
+  (define final-x (make-flvector dimension))
+  (memcpy (flvector->cpointer final-x) x-ioarray dimension _double)
+  (values y (output-formatter final-x)))
