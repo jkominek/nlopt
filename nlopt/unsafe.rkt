@@ -325,4 +325,8 @@
 (define _nlopt_munge (_fun _pointer -> _pointer))
 (defnlopt set-munge : _nlopt_opt _nlopt_munge _nlopt_munge -> _void)
 
+;;; EXECUTION INFORMATION
+
+(defnlopt get-numevals : _nlopt_opt -> _int)
+(provide get-numevals)
 
