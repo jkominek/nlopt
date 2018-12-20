@@ -95,16 +95,14 @@
                 (values [res nlopt-result/c]
                         [f real?]))]
  [set-min-objective (->i ([opt nlopt-opt?]
-                          [f (opt) (-> (=/c (get-dimension opt))
-                                       flvector?
+                          [f (opt) (-> flvector?
                                        (or/c flvector? #f)
                                        any/c
                                        flonum?)]
                           [data any/c])
                          [res nlopt-result/c])]
  [set-max-objective (->i ([opt nlopt-opt?]
-                          [f (opt) (-> (=/c (get-dimension opt))
-                                       flvector?
+                          [f (opt) (-> flvector?
                                        (or/c flvector? #f)
                                        any/c
                                        flonum?)]
