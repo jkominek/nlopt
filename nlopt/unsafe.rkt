@@ -180,7 +180,13 @@
 		 (nlopt-opt-eq-data o))))
   : _nlopt_opt -> _nlopt_opt)
 
-(defnlopt optimize : _nlopt_opt _pointer (opt_f : (_ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
+(define-fun-syntax _peg-ptr
+  (syntax-rules (o)
+    [(_ o  t) (type: _pointer
+               pre:  (malloc t 'atomic-interior)
+               post: (x => (ptr-ref x t)))]))
+
+(defnlopt optimize : _nlopt_opt _pointer (opt_f : (_peg-ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
 
 (define _nlopt_func (_fun (n : _uint) _pointer (_or-null _pointer) _pointer -> _double))
 
