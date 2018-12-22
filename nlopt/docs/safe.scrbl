@@ -41,6 +41,28 @@ to the C library. For the unsafe, contractless version, see
   Returns the dimension the options structure is set up to handle.
   }
 
+@defproc[(set-min-objective [opt nlopt-opt?]
+                            [f (-> flvector?
+                                   (or/c flvector? #f)
+                                   any/c
+                                   flonum?)]
+                            [data any/c])
+         nlopt-result/c]{
+  Sets the options objective to seek an @racket[flvector] for which @racket[f]
+  produces (approximately) its minimum @racket[flonum] value.                                                 
+  }
+
+@defproc[(set-max-objective [opt nlopt-opt?]
+                            [f (-> flvector?
+                                   (or/c flvector? #f)
+                                   any/c
+                                   flonum?)]
+                            [data any/c])
+         nlopt-result/c]{
+  Sets the options objective to seek an @racket[flvector] for which @racket[f]
+  produces (approximately) its maximum @racket[flonum] value.                                                 
+  }
+
 @defproc[(optimize [opt nlopt-opt?]
                    [x flvector?])
          (values [res symbol?]
