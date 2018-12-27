@@ -98,7 +98,7 @@ will probably cause Racket to crash.}
                                     [f (-> nlopt-opt?
                                            cpointer?
                                            (or/c cpointer? #f)
-                                           any/c
+                                           cpointer?
                                            flonum?)]
                                     [data any/c]
                                     [tolerance real?])
@@ -112,7 +112,7 @@ will probably cause Racket to crash.}
                                   [f (-> nlopt-opt?
                                          cpointer?
                                          (or/c cpointer? #f)
-                                         any/c
+                                         cpointer?
                                          flonum?)]
                                   [data any/c]
                                   [tolerance real?])
