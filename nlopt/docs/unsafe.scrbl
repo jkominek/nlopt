@@ -38,7 +38,7 @@ will probably cause Racket to crash.}
                             [f (-> natural-number/c
                                    cpointer?
                                    (or/c cpointer? #f)
-                                   any/c
+                                   cpointer?
                                    flonum?)]
                             [data any/c])
          symbol?]{
@@ -51,7 +51,7 @@ will probably cause Racket to crash.}
                             [f (-> natural-number/c
                                    cpointer?
                                    (or/c cpointer? #f)
-                                   any/c
+                                   cpointer?
                                    flonum?)]
                             [data any/c])
          symbol?]{
