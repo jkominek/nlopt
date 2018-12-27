@@ -38,7 +38,7 @@
                                           [#:maxeval maxeval natural-number/c]
                                           [#:maxtime maxtime (and/c positive? real?)])
                            (values real? flvector?)])]{
-  These super convenient procedure does pretty much everything for you.
+  These super convenient procedures do pretty much everything for you.
   @racket[minimize/flvector] and @racket[maximize/flvector] behave the
   same as @racket[optimize/flvector], and take all the same arguments,
   except for @racket[#:minimize] and @racket[#:maximize].

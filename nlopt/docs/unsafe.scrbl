@@ -32,6 +32,13 @@ will probably cause Racket to crash.}
   As with the safe version of @racket[optimize], but @racket[x] is
   provided as a bare pointer. It must point to a block of memory
   containing @racket[(get-dimension opt)] double-precision floats.
+
+  You should ensure that the @racket[x] pointer will not be moved over the
+  course of execution. For short runs, or one-off hacky bits of code
+  it probably doesn't matter. But if you start running long optimizations,
+  sooner or later the garbage collector will move anything that can be
+  moved. @racket[malloc] with a mode of @racket['atomic-interior] is
+  suggested.
 }
 
 @defproc[(set-min-objective [opt nlopt-opt?]
