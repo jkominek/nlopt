@@ -331,4 +331,12 @@
 (define _nlopt_munge (_fun _pointer -> _pointer))
 (defnlopt set-munge : _nlopt_opt _nlopt_munge _nlopt_munge -> _void)
 
+;; New in 2.5.0: nlopt_get_numevals
+(require ffi/unsafe/define)
+(define-ffi-definer define-nlopt libnlopt
+  #:default-make-fail make-not-available)
+
+(define-nlopt get-numevals (_fun _nlopt_opt -> _int)
+  #:c-id nlopt_get_numevals)
+(provide get-numevals)
 
