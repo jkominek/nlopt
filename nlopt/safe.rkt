@@ -165,8 +165,7 @@
  [remove-inequality-constraints (-> nlopt-opt? nlopt-result/c)]
  [add-inequality-constraint
   (->i ([opt nlopt-opt?]
-        [f (opt) (-> (=/c (get-dimension opt))
-                     flvector?
+        [f (opt) (-> flvector?
                      (or/c flvector? #f)
                      any/c
                      flonum?)]
@@ -176,8 +175,7 @@
  [remove-equality-constraints (-> nlopt-opt? nlopt-result/c)]
  [add-equality-constraint
   (->i ([opt nlopt-opt?]
-        [f (opt) (-> (=/c (get-dimension opt))
-                     flvector?
+        [f (opt) (-> flvector?
                      (or/c flvector? #f)
                      any/c
                      flonum?)]
