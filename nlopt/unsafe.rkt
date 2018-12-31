@@ -188,7 +188,11 @@
 
 (defnlopt optimize : _nlopt_opt _pointer (opt_f : (_peg-ptr o _double)) -> (res : _nlopt_result) -> (values res opt_f))
 
-(define _nlopt_func (_fun (n : _uint) _pointer (_or-null _pointer) _pointer -> _double))
+;; #:keep protects callbacks from premature garbage collection, because NLopt retains them
+(define _nlopt_func
+  (_fun #:keep (box '()) 
+        _uint _gcpointer _gcpointer _gcpointer ->
+        _double))
 
 (define (objective-wrapper raw)
   (lambda (o f d)
