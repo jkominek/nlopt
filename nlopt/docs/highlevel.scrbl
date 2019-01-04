@@ -38,7 +38,7 @@
                                           [#:maxeval maxeval natural-number/c]
                                           [#:maxtime maxtime (and/c positive? real?)])
                            (values real? flvector?)])]{
-  These super convenient procedures do pretty much everything for you.
+  These super convenient procedure does pretty much everything for you.
   @racket[minimize/flvector] and @racket[maximize/flvector] behave the
   same as @racket[optimize/flvector], and take all the same arguments,
   except for @racket[#:minimize] and @racket[#:maximize].
@@ -144,7 +144,35 @@
 
 @deftogether[(@defproc[(minimize/args ...) ...]
               @defproc[(maximize/args ...) ...]
-              @defproc[(optimize/args ...) ...])]{
+              @defproc[(optimize/args [fun (-> flonum? ... any/c flonum?)]
+                                          [x0 (sequence/c flonum?)]
+                                          [#:maximize maximize boolean?]
+                                          [#:minimize minimize boolean?]
+                                          [#:method method (or/c symbol? #f)]
+                                          [#:jac jac (or/c (-> flonum? flvector? flvector? any/c) #f)]
+                                          [#:bounds bounds (or/c (sequence/c (pair/c real? real?)) #f)]
+                                          [#:ineq-constraints ineq-constraints
+                                           (or/c #f
+                                             (sequence/c
+                                              (or/c (-> flvector? any/c flonum?)
+                                                    (cons/c
+                                                     (-> flvector? any/c flonum?)
+                                                     (-> flonum? flvector? flvector? any/c)))))]
+                                          [#:eq-constraints eq-constraints
+                                           (or/c #f
+                                             (sequence/c
+                                              (or/c (-> flvector? any/c flonum?)
+                                                    (cons/c
+                                                     (-> flvector? any/c flonum?)
+                                                     (-> flonum? flvector? flvector? any/c)))))]
+                                          [#:tolerance tolerance real?]
+                                          [#:epsilon epsilon real?]
+                                          [#:maxeval maxeval natural-number/c]
+                                          [#:maxtime maxtime (and/c positive? real?)])
+                           (values real? flvector?)])]{
+@;@deftogether[(@defproc[(minimize/args ...) ...]
+@;              @defproc[(maximize/args ...) ...]
+@;              @defproc[(optimize/args ...) ...])]{
   Takes different arguments. Needs docs.
   
   The @tt{/args} variants will be among the slowest. Like
