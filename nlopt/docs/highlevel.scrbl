@@ -10,34 +10,36 @@
  Not only will things here change, they might not even
  work right now.}
 
-@deftogether[(@defproc[(minimize/flvector ...) ...]
-               @defproc[(maximize/flvector ...) ...]
-               @defproc[(optimize/flvector [fun (-> flvector? any/c flonum?)]
-                                           [x0 flvector?]
-                                           [#:maximize maximize boolean?]
-                                           [#:minimize minimize boolean?]
-                                           [#:method method (or/c symbol? #f)]
-                                           [#:jac jac (or/c (-> flonum? flvector? flvector? any/c) #f)]
-                                           [#:bounds bounds (or/c (sequence/c (pair/c real? real?)) #f)]
-                                           [#:ineq-constraints ineq-constraints
-                                            (or/c #f
-                                                  (sequence/c
-                                                   (or/c (-> flvector? any/c flonum?)
-                                                         (cons/c
-                                                          (-> flvector? any/c flonum?)
-                                                          (-> flonum? flvector? flvector? any/c)))))]
-                                           [#:eq-constraints eq-constraints
-                                            (or/c #f
-                                                  (sequence/c
-                                                   (or/c (-> flvector? any/c flonum?)
-                                                         (cons/c
-                                                          (-> flvector? any/c flonum?)
-                                                          (-> flonum? flvector? flvector? any/c)))))]
-                                           [#:tolerance tolerance real?]
-                                           [#:epsilon epsilon real?]
-                                           [#:maxeval maxeval natural-number/c]
-                                           [#:maxtime maxtime (and/c positive? real?)])
-                        (values real? flvector?)])]{
+@deftogether[
+ (@defproc[(minimize/flvector ...) ...]
+   @defproc[(maximize/flvector ...) ...]
+   @defproc[(optimize/flvector
+             [fun (-> flvector? any/c flonum?)]
+             [x0 flvector?]
+             [#:maximize maximize boolean?]
+             [#:minimize minimize boolean?]
+             [#:method method (or/c symbol? #f)]
+             [#:jac jac (or/c (-> flonum? flvector? flvector? any/c) #f)]
+             [#:bounds bounds (or/c (sequence/c (pair/c real? real?)) #f)]
+             [#:ineq-constraints ineq-constraints
+              (or/c #f
+                    (sequence/c
+                     (or/c (-> flvector? any/c flonum?)
+                           (cons/c
+                            (-> flvector? any/c flonum?)
+                            (-> flonum? flvector? flvector? any/c)))))]
+             [#:eq-constraints eq-constraints
+              (or/c #f
+                    (sequence/c
+                     (or/c (-> flvector? any/c flonum?)
+                           (cons/c
+                            (-> flvector? any/c flonum?)
+                            (-> flonum? flvector? flvector? any/c)))))]
+             [#:tolerance tolerance real?]
+             [#:epsilon epsilon real?]
+             [#:maxeval maxeval natural-number/c]
+             [#:maxtime maxtime (and/c positive? real?)])
+            (values real? flvector?)])]{
  These super convenient procedures do pretty much everything for you.
  @racket[minimize/flvector] and @racket[maximize/flvector] behave the
  same as @racket[optimize/flvector], and take all the same arguments,
