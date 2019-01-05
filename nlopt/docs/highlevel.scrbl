@@ -1,6 +1,7 @@
 #lang scribble/manual
 
-@(require (for-label racket math/flonum racket/flonum nlopt/highlevel))
+@(require (for-label racket math/flonum racket/flonum ffi/vector
+                     nlopt/highlevel))
 
 @title[#:tag "highlevel"]{High Level Interface}
 
@@ -9,6 +10,167 @@
 @margin-note{This is the most unstable part of the package.
  Not only will things here change, they might not even
  work right now.}
+
+
+The highlevel package provides interfaces to NLopt functionality that are
+more convenient and self-contained than the low-level C-like interfaces.
+Variants are provided to cover a wide variety of styles that one might
+use to represent n-ary functions and their corresponding gradient functions.
+
+@itemize[@item{@racket[/flvector]: for mathematical functions that
+          take and produce one n-element @racket[flvector];}
+          @item{@racket[/f64vector]: corresponding versions for n-element
+          @racket[f64vector]s;}
+          @item{@racket[/vector]: corresponding versions for n-element
+          @racket[vector]s;}
+          @item{@racket[/list]: corresponding versions for n-element
+          @racket[list]s;}
+          @item{@racket[/arg]: operate seamlessly with n-argument Racket
+                 functions, where the result is either a single number or a
+                 n-element list of numbers.}]
+
+
+@section{A Quick-start Example}
+
+As a brief example of the high-level interface in action, we recreate the
+example from the NLopt Tutorial
+(@url["https://nlopt.readthedocs.io/en/latest/NLopt_Tutorial/"])
+here.
+
+
+
+Our goal is to solves the following nonlinearly-constrained minimization
+problem:
+
+consider the function:
+
+f(x0,x1) = (sqrt x1)
+
+find the pair x0,x1 that (approximately) minimizes f over the region
+
+x1 >= (-x0 + 1)^3;
+
+x1 >= (2*x0 + 0)^3;
+ 
+
+First, define the target function.
+@racketblock[
+;; the core function
+(define (fn x0 x1)
+  (sqrt x1))
+]
+
+Next, render the inequality constraints.  NLopt represents
+each constraint as a function C(x), which is interpreted as
+imposing the inequality C(x) <= 0.  Since both constraints
+have the parametric shape:
+
+(a*x0 + b)^3
+
+We represent them using one higher-order function that takes values for a,b and
+produces the corresponding constraint function.
+@racketblock[
+;; parameterized inequality constraint function
+;; nice when multiple inequalities have the same shape
+;; (cn a b) yields a function C(x) which represents the inequality C(x) <= 0
+(define ((cn a b) x0 x1)
+  (- (expt (+ (* a x0) b) 3) x1))
+
+(define ineq-constraints
+  (list (cn 2.0 0.0) (cn -1.0 1.0)))
+]
+
+Set lower- and upper-bounds on the search space for x0 and x1. 
+@racketblock[
+;; (lower-bound . upper-bound) pairs for x0 and x1 
+(define bounds '((-inf.0 . +inf.0) (0.0 . +inf.0)))
+]
+
+Choose a point in the space where search will begin
+@racketblock[
+;; starting point for search (within the intended bounds)
+(define initial-x (list 1.234 5.678))
+]
+
+Finally we're ready:  run the search!
+
+@racketblock[
+;;
+;; Simpler variation of the same problem:
+;; */args can pick a default optimization method and can approximate gradients
+(define-values (fn-x x)
+  (minimize/args fn
+                 initial-x
+                 #:bounds bounds
+                 #:ineq-constraints ineq-constraints))
+]
+
+The @racket[minimize/args] function returns two values: the minimal value
+@racket[fn-x] and the point @racket[x] known to yield that value.
+
+@racketblock[
+;; helper for formatting decimal numbers
+(define (digits n) (real->decimal-string n 3))
+(printf "Result: x = ~a; f(x) = ~a.\n"
+        (map digits x)
+        (digits fn-x))
+]
+
+@subsection{Some extra options}
+
+The example above is pretty minimal, but the high-level interface provides more
+options to tailor the search.  For instance, the above code lets the interface
+choose the optimization algorithm. Furthermore, the interface synthesizes its
+own approximate gradient (a.k.a. Jacobian) functions for the target function and
+the constraint functions.  We can supply our own more accurate
+gradient functions, as well as select the algorithm and the optimization
+direction.  The following additions execute that plan.
+
+
+First, introduce gradient functions for both the target and constraint
+functions.  The constraint gradient functions are parameterized, just like
+the originals.
+
+@racketblock[
+;; the core gradient function 
+(define (grad-fn x0 x1)
+  (list 0.0 (/ 0.5 (sqrt x1))))
+
+;; parameterized constraint gradient function 
+(define ((grad-cn a b) x0 x1)
+  (list (* 3 a (expt (+ (* a x0) b) 2))
+        0.0))
+]
+
+Now supply constraint gradient functions alongside the constraint functions
+
+@racketblock[
+(define ineq-constraint-grads
+  (list (cons (cn 2.0 0.0) (grad-cn 2.0 0.0))
+        (cons (cn -1.0 1.0) (grad-cn -1.0 1.0))))
+]
+
+Finally, supply the @racket[#:minimize #t] option to the general
+@racket[optimize/args] function to choose minimization, and provide the target
+gradient function and constraint-gradient function pairs using keyword options.
+
+@racketblock[
+;; perform the optimization
+(define-values (fn-x^ x^)
+  (optimize/args fn
+                 initial-x
+                 #:minimize #t
+                 #:jac grad-fn
+                 #:method 'LD_MMA
+                 #:bounds bounds
+                 #:ineq-constraints ineq-constraint-grads))
+
+(printf "Result: x = ~a; f(x) = ~a.\n"
+        (map digits x^)
+        (digits fn-x^))
+]
+
+@section{The Programming Interface}
 
 @deftogether[
  (@defproc[(minimize/flvector ...) ...]
