@@ -38,7 +38,7 @@
                                            [#:maxeval maxeval natural-number/c]
                                            [#:maxtime maxtime (and/c positive? real?)])
                         (values real? flvector?)])]{
- These super convenient procedure does pretty much everything for you.
+ These super convenient procedures do pretty much everything for you.
  @racket[minimize/flvector] and @racket[maximize/flvector] behave the
  same as @racket[optimize/flvector], and take all the same arguments,
  except for @racket[#:minimize] and @racket[#:maximize].
@@ -51,12 +51,12 @@
  and @racket[grad] is an @racket[flvector?] to be populated with the
  gradient.
 
- @racket[fun] is the procedure that will be optimized. It shouldn't be
+ @racket[fun] is the procedure to be optimized. It shouldn't be
  invoked significantly more than @racket[maxeval] times, over
  @racket[maxtime] seconds. @racket[x0]
  is your initial guess for the optimization; some algorithms are more
  sensitive to the quality of your initial guess than others. @racket[data]
- will be passed to every invocation of @racket[fun] or @racket[jac].
+ is passed to every invocation of @racket[fun] or @racket[jac].
  You may use @racket[force-stop] inside of @racket[fun].
 
  @racket[#:maximize] and @racket[#:minimize] determine whether a
@@ -142,54 +142,56 @@
  They should return the gradient as a @racket[list?].
 }
 
-@deftogether[(@defproc[(minimize/args ...) ...]
-               @defproc[(maximize/args ...) ...]
-               @defproc[(optimize/args
-                         [fun (-> flonum? ... any/c flonum?)]
-                         [x0 (sequence/c flonum?)]
-                         [#:maximize maximize boolean?]
-                         [#:minimize minimize boolean?]
-                         [#:method method (or/c symbol? #f)]
-                         [#:jac jac (or/c (-> flonum? flvector? flvector? any/c) #f)]
-                         [#:bounds bounds (or/c (sequence/c (pair/c real? real?)) #f)]
-                         [#:ineq-constraints ineq-constraints
-                          (or/c #f
-                                (sequence/c
-                                 (or/c (-> flvector? any/c flonum?)
-                                       (cons/c
-                                        (-> flvector? any/c flonum?)
-                                        (-> flonum? flvector? flvector? any/c)))))]
-                         [#:eq-constraints eq-constraints
-                          (or/c #f
-                                (sequence/c
-                                 (or/c (-> flvector? any/c flonum?)
-                                       (cons/c
-                                        (-> flvector? any/c flonum?)
-                                        (-> flonum? flvector? flvector? any/c)))))]
-                         [#:tolerance tolerance real?]
-                         [#:epsilon epsilon real?]
-                         [#:maxeval maxeval natural-number/c]
-                         [#:maxtime maxtime (and/c positive? real?)])
-                        (values real? flvector?)])]{
- @;@deftogether[(@defproc[(minimize/args ...) ...]
- @;              @defproc[(maximize/args ...) ...]
- @;              @defproc[(optimize/args ...) ...])]{
- Takes different arguments. Needs docs.
-  
- The @tt{/args} variants will be among the slowest. Like
- @tt{/vector} and @tt{/list} variants, will handle any @racket[real?]
+@deftogether[
+ (@defproc[(minimize/args ...) ...]
+   @defproc[(maximize/args ...) ...]
+   @defproc[
+ (optimize/args
+  [fun (-> flonum? ...+ flonum?)]
+  [x0 (sequence/c flonum?)]
+  [#:maximize maximize boolean?]
+  [#:minimize minimize boolean?]
+  [#:method method (or/c symbol? #f)]
+  [#:jac jac (or/c (-> flonum? ...+ (or/c flonum? (list/c flonum?))) #f)]
+  [#:bounds bounds (or/c (sequence/c (pair/c real? real?)) #f)]
+  [#:ineq-constraints ineq-constraints
+   (or/c #f
+         (sequence/c
+          (or/c (-> flonum? ...+ flonum?)
+                (cons/c
+                 (-> flonum? ...+ flonum?)
+                 (-> flonum? ...+
+                     (or/c flonum? (list/c flonum?)))))))]
+  [#:eq-constraints eq-constraints
+   (or/c #f
+         (sequence/c
+          (or/c (-> flonum? ...+ flonum?)
+                (cons/c
+                 (-> flonum? ...+ flonum?)
+                 (-> flonum? ...+
+                     (or/c flonum? (list/c flonum?)))))))]
+  [#:tolerance tolerance real?]
+  [#:epsilon epsilon real?]
+  [#:maxeval maxeval natural-number/c]
+  [#:maxtime maxtime (and/c positive? real?)])
+ (values flonum? flvector?)])]{
+ The @tt{/args} variants are designed to operate on ordinary n-ary Racket
+ functions.  The @tt{/args} variants are likely the slowest. Like
+ @tt{/vector} and @tt{/list} variants, these will handle any @racket[real?]
  values. @tt{/args} objective functions should be of the form
- @racket[(fun x ...)] where @racket[x ...] are the elements of the
- @racket[x] vector and the Jacobians should be of the form
- @racket[(jac x ...)]. They should return the gradient as a
- @racket[list?]. Note @tt{/args} Jacobian functions do not receive the the
- precomputed @racket[y]. This allows you to quickly set up an
- optimization problem using existing mathematical functions:
+ @racket[(fun xi ...)] where @racket[xi ...] are the elements of some
+ @racket[x] vector, and the Jacobians should be of the form
+ @racket[(jac xi ...)]. The Jacobian function should return the gradient as a
+ @racket[list?] or optionally as a single @racket[flonum?] in the
+ one-dimensional case. Unlike other variants, the @tt{/args} Jacobian functions
+ do not receive as an argument the precomputed result @racket[y] of
+ @racket[(fun xi ...)].  This allows you to quickly set up an optimization
+ problem using existing mathematical functions, e.g.:
 
- @racketblock{
-  (maximize/args sin
-  '(0.0)
-  #:jac cos
-  #:bounds '((-inf.0 0.0)))
- }
+ @racketblock[
+ (maximize/args sin
+                '(0.0)
+                #:jac cos
+                #:bounds '((-inf.0 0.0)))
+ ]
 }
