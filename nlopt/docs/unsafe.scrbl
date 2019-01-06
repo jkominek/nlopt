@@ -241,12 +241,14 @@ directly pass structured client data.  This can be done using an extra layer of
 indirection.  The following code, without commentary, shows what changes
 to the above code that supports creating a safe block of memory that points to
 a traditional Racket struct to support the retrieval of client data.
-Note that this code only works for versions of Racket after Version 7.1 due to
-a since-fixed bug in the memory allocator.
+
+@margin-note{
+Note that the @racket['interior] option to @racket[malloc] only works for
+versions of Racket after Version 7.1 due to a bug in the memory allocator.}
 
 @racketblock[
 (define (cbox s)
-  (define ptr (malloc _racket 'atomic-interior))
+  (define ptr (malloc _racket 'interior))
   (ptr-set! ptr _racket s)
   ptr)
  
