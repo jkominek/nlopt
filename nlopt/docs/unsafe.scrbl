@@ -3,7 +3,7 @@
 @(require (for-label (except-in racket version)
                      (only-in ffi/unsafe cpointer? ptr-set! ptr-ref malloc
                               _double)
-                     ffi/vector nlopt/unsafe))
+                     ffi/vector racket/flonum nlopt/unsafe))
 
 @title[#:tag "unsafe"]{Unsafe Interface}
 
