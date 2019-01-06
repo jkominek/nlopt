@@ -33,7 +33,7 @@ familiarize yourself with the problem description and analogous code for the
 high-level nlopt interface.
 
 In order to properly work with the unsafe interface, we require features of
-Racket's unsafe FFI library.  At times we will also exploit @racket[flonum?]
+Racket's unsafe FFI library.  At times we also exploit @racket[flonum?]
 and @racket[flvector]s, which are vectors of @racket[flonum?] objects that
 have the same memory layout as arrays of double from C.
 
@@ -43,7 +43,7 @@ have the same memory layout as arrays of double from C.
 (require ffi/unsafe)
 ]
 
-The unsafe interface must often keep track of the dimensions of the
+The unsafe interface must occasionally indicate the dimensionality of the
 target function's search space.
 
 @racketblock[
@@ -52,18 +52,14 @@ target function's search space.
 
 To emphasize the low-level nature of the unsafe interface, the unsafe
 implementation mirrors the implementation that can be found in the NLOpt
-tutorial.  If you are familiar with C, you might with to compare this
+tutorial.  If you are familiar with C, then you might wish to compare this
 Racket code to that C code.
 
 @racketblock[
-;; (-> natural-number/c cpointer? cpointer? cpointer? flonum?)
-;; the function to be minimized, PLUS its gradient, using nlopt/unsafe API
-;; only compute the gradient when grad is not #f
 (define (myfunc n x grad data)
-  ;(collect-garbage 'major) ;; stress-test for memory-safety
-  ;; x is a cpointer to an array of n doubles. 
   (define x0 (ptr-ref x _double 0))
   (define x1 (ptr-ref x _double 1))
+
   (when grad
     (ptr-set! grad _double 0 0.0)
     (ptr-set! grad _double 1 (/ 0.5 (sqrt x1))))
@@ -81,17 +77,16 @@ register different values for @racket[a] and @racket[b] to be used in two
 separate constraints.  Note that this approach is not recommended:  client
 data is used in C to simulate closures, but Racket's FFI supports passing
 closures to C as callbacks (see the highlevel API's quick-start example).
-We use client data here simply to illustrate what is possible, not what is
-recommended.
+We use client data here simply to illustrate what is possible.
 
 Since NLOpt retains pointers to client data, we use Racket's custom memory
 allocation to construct objects to create two-element arrays that the
 garbage collector guarantees not to move (i.e., @italic{interior} memory),
 and are known not to contain pointers (i.e., @italic{atomic} memory).
 See the @racket[malloc] documentation for details.
-
 Later, we show how to pass a Racket struct through this interface, using
-one layer of indirection.
+a specially-allocated pointer to the struct.
+
 @racketblock[
 
 ;; double double -> constraint
@@ -145,7 +140,7 @@ Here it is safe to use a cpointer to an @racket[flvector] because:
  @item{@racket[set-lower-bounds] does not hold onto the pointer that is passed
   to it; rather, it copies the numeric values to its own managed memory.  This
   means that the C library is unaffected if lower-bounds is copied or collected
-  after set-lower-bounds returns.}
+  after @racket[set-lower-bounds] returns.}
  ]
   
 @racketblock[
@@ -154,8 +149,8 @@ Here it is safe to use a cpointer to an @racket[flvector] because:
 ]
 
 Next, we configure the optimization to minimize the @racket[myfunc] function.
-Client data is initialized to #f (equivalent to a null pointer in C), since
-@racket[myfunc] uses no client data.
+Client data is initialized to @racket[#f] (equivalent to a null pointer in C),
+since @racket[myfunc] uses no client data.
 
 @racketblock[
 ;; set-min-objective objective
@@ -201,8 +196,8 @@ With all settings in place, we initiate the optimization.
 ]
 
 @racket[optimize] returns three values.  @racket[result] is a status flag,
-@racket[minf] is the minimum value found during search, and @racket[x] has
-been modified to hold the point at which the function produced @racket[minf].
+@racket[minf] is the minimum value found during search, and @racket[x] is
+modified to hold the point at which the function produced @racket[minf].
 
 We can interrogate the status flag and possibly report errors.
 
@@ -215,11 +210,10 @@ We can interrogate the status flag and possibly report errors.
 ]
 
 According to the NLOpt documentation, the result of optimization may still
-be useful even if the optimization procedure resorted to rounding, but it is
-good practice to report that this happened.
+be useful even if the optimization reports a @racket['ROUNDOFF_LIMITED] result.
+Nonetheless it is good to report that this happened.
 
 @racketblock[
-;; "roundoff limited" is a soft failure: the results may still be usable.
 (when (equal? result 'ROUNDOFF_LIMITED)
   (printf "warning: roundoff limited!\n"))
 ]
@@ -236,11 +230,12 @@ we can inspect and manipulate the results.
 
 @subsection{Passing Racket Structured Data Directly}
 
-Though closures are preferred for passing client data to NLOpt, one may wish to
-directly pass structured client data.  This can be done using an extra layer of
-indirection.  The following code, without commentary, shows what changes
-to the above code that supports creating a safe block of memory that points to
-a traditional Racket struct to support the retrieval of client data.
+Though closures are the preferred technique for associating client data to
+an NLOpt callback, one may wish to directly pass structured client data.
+This can be done using an extra indirection.  The following code, without
+commentary, presents changes to the above code that create a safe memory block
+that points to a traditional Racket struct, from which a callback can retrieve
+it.
 
 @margin-note{
 Note that the @racket['interior] option to @racket[malloc] only works for
