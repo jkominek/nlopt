@@ -13,8 +13,9 @@
 ;; using the nlopt/unsafe API
 ;;
 ;; Take 2: Some Niceties
-;; - Use indirection to support Racket native constraint data; sadly it
-;;   requires manual memory management for some reason :-/.
+;; - Use indirection to support Racket native constraint data;
+;; - (due to a bug in Racket 7.1, it requires manual memory management
+;;    until Racket 7.2 is released)
 
 
 ;;
@@ -41,36 +42,40 @@
     (ptr-set! grad _double 1 (/ 0.5 (sqrt x1))))
   (sqrt x1))
 
-
-;; CBOX: Indirection to a Racket object for safely passing to C
+;;
+;; CBOX: Indirection to a Racket object for safe passage to C
+;;
 (define-cpointer-type _cbox)
+
+
+;; Workaround variant cbox for Racket 7.1, using manual memory management
 (define cboxes '())
+
+(define (cbox-workaround s)  
+  (define ptr (malloc-immobile-cell s))
+  (set-cpointer-tag! ptr _cbox)
+  (ptr-set! ptr _racket s)
+  (set! cboxes (cons ptr cboxes))
+ ptr)
+
 (define (free-cboxes)
   (for ([cb cboxes])
     (free-immobile-cell cb))
   (define n (length cboxes))
   (set! cboxes '())
   n)
+;; End Workaround
 
-;; UPDATE: cbox2 should work, there was a bug in Racket.
-;; TODO: Once Racket >7.1 is released, trash the immobile version.
-(define (cbox s)  
-  (define ptr (malloc-immobile-cell s)) ;; for some reason this works...
-  ;(define ptr (malloc _racket 'interior)) ;; but this doesn't
-  ;; The following mailing list post suggests to use Racket closures
-  ;; (and ignore clientData) instead of simulating closures
-  ;; http://lists.racket-lang.org/users/archive/2010-July/040480.html
-  (set-cpointer-tag! ptr _cbox)
-  (ptr-set! ptr _racket s)
-  (set! cboxes (cons ptr cboxes))
- ptr)
-
-;; Broken version, to experiment with.
-(define (cbox2 s)  
+;; This (correct) version of cbox should work once Racket 7.2 is released
+(define (cbox-7.2 s)  
   (define ptr (malloc _racket 'atomic-interior))
   (set-cpointer-tag! ptr _cbox)
   (ptr-set! ptr _racket s)
   ptr)
+
+;; For now (under Racket 7.1) use the workaround
+(define cbox cbox-workaround)
+
 
 (define (cunbox cb)
   (unless (cpointer-has-tag? cb _cbox)
