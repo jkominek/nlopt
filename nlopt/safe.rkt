@@ -2,7 +2,7 @@
 
 (require racket/require
          racket/flonum
-         (only-in ffi/unsafe flvector->cpointer memcpy _double))
+         (only-in ffi/unsafe flvector->cpointer memcpy _double malloc))
 
 (require
  (filtered-in
@@ -59,7 +59,14 @@
 ;;; BASICS
 
 (define (optimize opt initial)
-  (unsafe-optimize opt (flvector->cpointer initial)))
+  (define data
+    (malloc _double
+            (flvector-length initial)
+            (flvector->cpointer initial)
+            'atomic-interior))
+  (define-values (res f) (unsafe-optimize opt data))
+  (memcpy (flvector->cpointer initial) data (flvector-length initial))
+  (values res f))
 
 (define (wrap-nlopt-func f)
   (lambda (n raw-x raw-grad data)
