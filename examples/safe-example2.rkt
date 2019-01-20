@@ -8,13 +8,15 @@
   (require rackunit))
 
 ;;
-;; safe-example.rkt - A re-implementation of the NLopt example
+;; safe-example2.rkt - A re-implementation of the NLopt example
 ;; from https://nlopt.readthedocs.io/en/latest/NLopt_Tutorial/
 ;; using the nlopt/safe API
 ;;
-;; Take 2: Some Niceties
-;; - Use indirection to support Racket native constraint data
-
+;; - Use indirection to support Racket native constraint data.
+;;   Note that NLOpt client data simulates closures in C, so from Racket,
+;;   it is preferable to just use closures, as in safe-example1.rkt.
+;;   Due to a bug in Racket 7.1, this code will only work for later versions
+;;   See unsafe-example2.rkt for a workaround.
 
 ;;
 ;; The following code solves a nonlinearly-constrained minimization problem:

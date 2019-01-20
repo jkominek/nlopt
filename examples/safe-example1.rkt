@@ -8,22 +8,15 @@
   (require rackunit))
 
 ;;
-;; safe-example.rkt - A re-implementation of the NLopt example
+;; safe-example1.rkt - A re-implementation of the NLopt example
 ;; from https://nlopt.readthedocs.io/en/latest/NLopt_Tutorial/
 ;; using the nlopt/safe API
 ;;
-;; Take 2: Some Niceties
-;; - Use indirection to support Racket native constraint data
-
-
 (define DIMENSIONS 2) 
-(define counter 0)
+
 (define (myfunc x grad _)
   (define x0 (flvector-ref x 0))
   (define x1 (flvector-ref x 1))
-  (collect-garbage 'major)
-  (printf "try ~a\n" counter)
-  (set! counter (add1 counter))
   (when grad
     (flvector-set! grad 0 0.0)
     (flvector-set! grad 1 (/ 0.5 (sqrt x1))))

@@ -9,7 +9,7 @@
   (require rackunit))
 
 ;;
-;; unsafe-example.rkt - A re-implementation of the NLopt example
+;; unsafe-example1.rkt - A re-implementation of the NLopt example
 ;; from https://nlopt.readthedocs.io/en/latest/NLopt_Tutorial/
 ;; using the nlopt/unsafe API
 ;;
