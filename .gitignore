@@ -6,3 +6,4 @@
 compiled
 *.zo
 doc
+.DS_Store
