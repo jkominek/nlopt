@@ -11,6 +11,67 @@ This module is the safe, fully-contracted version of the interface
 to the C library. For the unsafe, contractless version, see
 @racket[nlopt/unsafe].
 
+@section{A FullExample}
+
+The following code reconstructs the NLOpt tutorial
+@url["https://nlopt.readthedocs.io/en/latest/NLopt_Tutorial/"]
+in terms of the safe interface.  The same example is presented in terms of the
+high-level and unsafe Racket interfaces.  Consult those sections of
+this documentation for more detailed explanation.
+
+@racketblock[
+(define DIMENSIONS 2) 
+(define (myfunc x grad _)
+  (define x0 (flvector-ref x 0))
+  (define x1 (flvector-ref x 1))
+
+  (when grad
+    (flvector-set! grad 0 0.0)
+    (flvector-set! grad 1 (/ 0.5 (sqrt x1))))
+  (sqrt x1))
+
+(define ((myconstraint a b) x grad _)
+  (define x0 (flvector-ref x 0))
+  (define x1 (flvector-ref x 1))
+
+  (when grad
+    (flvector-set! grad
+                   0
+                   (* 3 a (expt (+ (* a x0) b) 2)))
+    (flvector-set! grad
+                   1
+                   0.0))
+  (- (expt (+ (* a x0) b) 3) x1))
+
+(define opt (create 'LD_MMA DIMENSIONS))
+
+(set-lower-bounds opt (flvector -inf.0 0.0))
+
+(set-min-objective opt myfunc #f) 
+
+(add-inequality-constraint opt (myconstraint 2.0 0.0) #f 1e-8) 
+(add-inequality-constraint opt (myconstraint -1.0 0.0) #f 1e-8) 
+
+(set-xtol-rel opt 1e-4)
+
+(define x (flvector 1.234 5.678))
+
+(define-values (result minf) (optimize opt x))
+
+(define HARD-FAILURE '(FAILURE INVALID_ARGS OUT_OF_MEMORY))
+
+(when (member result HARD-FAILURE)
+  (error "nlopt failed: ~a\n" result))
+
+(when (equal? result 'ROUNDOFF_LIMITED)
+  (printf "warning: roundoff limited!\n"))
+
+(printf "found minimum at f(~a,~a) = ~a\n"
+        (real->decimal-string (flvector-ref x 0) 3)
+        (real->decimal-string (flvector-ref x 1) 3)
+        (real->decimal-string minf 3))
+ ]
+
 @section{Basics}
 
 @defproc[(create [algorithm symbol?]
