@@ -101,7 +101,7 @@
 		  (regexp-replaces
 		   (symbol->string (syntax->datum n))
 		   '((#rx"-" "_")
-		     [#rx"(.*)$" "nlopt_\\1"]
+		     [#rx"^(.*)$" "nlopt_\\1"]
 		     (#rx"!$" ""))))))
 
 (define-syntax (defnlopt stx)
