@@ -7,7 +7,7 @@
 (define libnlopt-name
   (case (system-type 'os)
     [(unix) "libnlopt.so"]
-    [(windows) "libnlopt-0.dll"]
+    [(windows) "libnlopt.dll"]
     [(macosx) "libnlopt.dylib"]))
 
 (define _nlopt_algorithm
@@ -93,7 +93,7 @@
            MAXTIME_REACHED = 6)
          _int))
 
-(define libnlopt (ffi-lib libnlopt-name))
+(define libnlopt (ffi-lib libnlopt-name '("0" #f)))
 
 (define-for-syntax (convert-name stx n)
   (datum->syntax stx
