@@ -1,0 +1,26 @@
+name: Racket test
+
+on:
+  push:
+    branches: [ '**' ]
+  pull_request:
+    branches: [ '**' ]
+  schedule:
+    - cron: "0 1 * * 0" # run weekly, to pick up racket and nlopt changes
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: racket ppa
+      run: sudo add-apt-repository ppa:plt/racket ; sudo apt-get update
+    - name: package install
+      run: sudo apt-get install -y racket libnlopt0
+    - name: raco linkage
+      run: raco link -n nlopt `pwd`/nlopt
+    - name: unsafe tests
+      run: cd tests ; racket unsafe.rkt
+    - name: highlevel tests
+      run: cd tests ; racket highlevel.rkt
