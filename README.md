@@ -1,3 +1,5 @@
+[![Racket test](https://github.com/jkominek/nlopt/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/jkominek/nlopt/actions/workflows/test.yml)
+
 This is a Racket wrapper for the NLopt library
 http://ab-initio.mit.edu/wiki/index.php/NLopt
 
