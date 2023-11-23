@@ -356,6 +356,6 @@ gradient function and constraint-gradient function pairs using keyword options.
  (maximize/args sin
                 '(0.0)
                 #:jac cos
-                #:bounds '((-inf.0 0.0)))
+                #:bounds '((-inf.0 . 0.0)))
  ]
 }
