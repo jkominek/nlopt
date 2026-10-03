@@ -2,8 +2,11 @@
 
 (define collection 'multi)
 
-(define deps '("base" "math-lib"))
+(define deps '("plot-gui-lib"
+               "plot-lib"
+               "base" "math-lib"))
 
-(define build-deps '("math-doc"
+(define build-deps '("rackunit-lib"
+                     "math-doc"
                      "racket-doc"
                      "scribble-lib"))
